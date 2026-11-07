@@ -1,0 +1,8 @@
+{
+  "slug": "collection-by-item-type",
+  "group": "collection",
+  "title": "Collection size by library, item type and collection",
+  "summary": "How many copies each library holds, by item type and collection code, and how many are on loan now.",
+  "audience": "everyone",
+  "parameters": []
+}

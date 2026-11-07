@@ -1,0 +1,24 @@
+{
+  "slug": "new-acquisitions",
+  "group": "collection",
+  "title": "New acquisitions in a period",
+  "summary": "Copies added to one library's collection between two dates, newest first.",
+  "audience": "everyone",
+  "parameters": [
+    {
+      "placeholder": "Library|branches",
+      "sample": "CPL",
+      "prompt": "the library (pick from the list Koha shows)"
+    },
+    {
+      "placeholder": "From|date",
+      "sample": "2026-09-01",
+      "prompt": "first day of the period"
+    },
+    {
+      "placeholder": "To|date",
+      "sample": "2026-11-07",
+      "prompt": "last day of the period (included)"
+    }
+  ]
+}

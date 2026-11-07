@@ -1,0 +1,14 @@
+{
+  "slug": "lost-and-withdrawn-items",
+  "group": "collection",
+  "title": "Lost and withdrawn items",
+  "summary": "Every copy at one library marked lost or withdrawn, with the status and the date it changed.",
+  "audience": "everyone",
+  "parameters": [
+    {
+      "placeholder": "Library|branches",
+      "sample": "CPL",
+      "prompt": "the library (pick from the list Koha shows)"
+    }
+  ]
+}

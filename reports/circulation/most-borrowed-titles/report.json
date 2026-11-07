@@ -1,0 +1,19 @@
+{
+  "slug": "most-borrowed-titles",
+  "group": "circulation",
+  "title": "Most borrowed titles in a period",
+  "summary": "The 50 titles checked out most often between two dates, across all libraries.",
+  "audience": "everyone",
+  "parameters": [
+    {
+      "placeholder": "From|date",
+      "sample": "2026-09-01",
+      "prompt": "first day of the period"
+    },
+    {
+      "placeholder": "To|date",
+      "sample": "2026-11-07",
+      "prompt": "last day of the period (included)"
+    }
+  ]
+}

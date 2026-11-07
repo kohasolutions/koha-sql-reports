@@ -1,0 +1,14 @@
+{
+  "slug": "patrons-expiring-soon",
+  "group": "patrons",
+  "title": "Patrons whose membership expires soon",
+  "summary": "Patrons whose membership expires within the next N days, with contact details, soonest first.",
+  "audience": "staff",
+  "parameters": [
+    {
+      "placeholder": "Days ahead",
+      "sample": "365",
+      "prompt": "how many days ahead to look, e.g. 30"
+    }
+  ]
+}

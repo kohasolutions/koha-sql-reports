@@ -1,0 +1,51 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  reports:
+    name: Koha's save rules, layout, index
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/lint.mjs
+      - run: node tools/build-index.mjs --check
+      - name: Company introduction matches github.com/kohasolutions/.github/company/about.md
+        run: node tools/sync-about.mjs --check
+
+  schema:
+    name: Columns exist in Koha ${{ matrix.koha }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # The latest release of each Koha series the reports are checked against. Update when Koha releases.
+        koha: [v23.11.15-1, v24.05.16-1, v24.11.21-1, v25.05.16-1, v25.11.10-1, v26.05.05-1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch kohastructure.sql for ${{ matrix.koha }}
+        run: curl -fsSL -o kohastructure.sql "https://raw.githubusercontent.com/Koha-Community/Koha/${{ matrix.koha }}/installer/data/mysql/kohastructure.sql"
+      - run: KOHASTRUCTURE=kohastructure.sql node tools/lint.mjs
+
+  secrets:
+    name: No secrets committed
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

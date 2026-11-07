@@ -1,0 +1,8 @@
+{
+  "slug": "patrons-by-category",
+  "group": "patrons",
+  "title": "Patrons by library and category",
+  "summary": "How many patrons each library has in each category, split into current and expired memberships.",
+  "audience": "everyone",
+  "parameters": []
+}

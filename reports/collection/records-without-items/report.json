@@ -1,0 +1,8 @@
+{
+  "slug": "records-without-items",
+  "group": "collection",
+  "title": "Records with no items",
+  "summary": "Catalogue records that have no copies attached, newest first.",
+  "audience": "everyone",
+  "parameters": []
+}

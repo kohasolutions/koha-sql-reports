@@ -1,0 +1,283 @@
+[
+  {
+    "slug": "circulation-by-month",
+    "group": "circulation",
+    "title": "Checkouts, renewals and returns by month",
+    "summary": "Monthly totals of checkouts, renewals and returns at one library for a period: the numbers most annual reports ask for.",
+    "audience": "everyone",
+    "parameters": [
+      {
+        "placeholder": "Library|branches",
+        "sample": "CPL",
+        "prompt": "the library (pick from the list Koha shows)"
+      },
+      {
+        "placeholder": "From|date",
+        "sample": "2026-09-01",
+        "prompt": "first day of the period"
+      },
+      {
+        "placeholder": "To|date",
+        "sample": "2026-11-07",
+        "prompt": "last day of the period (included)"
+      }
+    ],
+    "path": "reports/circulation/circulation-by-month",
+    "sql": "SELECT DATE_FORMAT(statistics.datetime, '%Y-%m') AS 'Month',\n       SUM(statistics.type = 'issue') AS 'Checkouts',\n       SUM(statistics.type = 'renew') AS 'Renewals',\n       SUM(statistics.type = 'return') AS 'Returns'\nFROM statistics\nWHERE statistics.branch = <<Library|branches>>\n  AND statistics.datetime >= <<From|date>>\n  AND statistics.datetime < <<To|date>> + INTERVAL 1 DAY\nGROUP BY DATE_FORMAT(statistics.datetime, '%Y-%m')\nORDER BY 1"
+  },
+  {
+    "slug": "current-loans-by-library",
+    "group": "circulation",
+    "title": "Current loans by library",
+    "summary": "How many items are on loan right now at each library, and how many of those are overdue.",
+    "audience": "everyone",
+    "parameters": [],
+    "path": "reports/circulation/current-loans-by-library",
+    "sql": "SELECT branches.branchname AS 'Library',\n       COUNT(*) AS 'On loan',\n       SUM(issues.date_due < NOW()) AS 'Overdue'\nFROM issues\nLEFT JOIN branches ON branches.branchcode = issues.branchcode\nGROUP BY issues.branchcode, branches.branchname\nORDER BY branches.branchname"
+  },
+  {
+    "slug": "items-never-borrowed",
+    "group": "circulation",
+    "title": "Items never borrowed",
+    "summary": "Copies at one library that have never been checked out, oldest first: candidates for weeding or promotion.",
+    "audience": "everyone",
+    "parameters": [
+      {
+        "placeholder": "Library|branches",
+        "sample": "CPL",
+        "prompt": "the library (pick from the list Koha shows)"
+      }
+    ],
+    "path": "reports/circulation/items-never-borrowed",
+    "sql": "SELECT items.barcode AS 'Barcode',\n       biblio.title AS 'Title',\n       biblio.author AS 'Author',\n       items.itemcallnumber AS 'Call number',\n       itemtypes.description AS 'Item type',\n       items.dateaccessioned AS 'Added'\nFROM items\nJOIN biblio ON biblio.biblionumber = items.biblionumber\nLEFT JOIN itemtypes ON itemtypes.itemtype = items.itype\nWHERE items.homebranch = <<Library|branches>>\n  AND COALESCE(items.issues, 0) = 0\n  AND items.datelastborrowed IS NULL\n  AND items.itemlost = 0\n  AND items.withdrawn = 0\nORDER BY items.dateaccessioned, biblio.title"
+  },
+  {
+    "slug": "most-borrowed-titles",
+    "group": "circulation",
+    "title": "Most borrowed titles in a period",
+    "summary": "The 50 titles checked out most often between two dates, across all libraries.",
+    "audience": "everyone",
+    "parameters": [
+      {
+        "placeholder": "From|date",
+        "sample": "2026-09-01",
+        "prompt": "first day of the period"
+      },
+      {
+        "placeholder": "To|date",
+        "sample": "2026-11-07",
+        "prompt": "last day of the period (included)"
+      }
+    ],
+    "path": "reports/circulation/most-borrowed-titles",
+    "sql": "SELECT biblio.title AS 'Title',\n       biblio.author AS 'Author',\n       COUNT(*) AS 'Checkouts'\nFROM statistics\nJOIN items ON items.itemnumber = statistics.itemnumber\nJOIN biblio ON biblio.biblionumber = items.biblionumber\nWHERE statistics.type = 'issue'\n  AND statistics.datetime >= <<From|date>>\n  AND statistics.datetime < <<To|date>> + INTERVAL 1 DAY\nGROUP BY biblio.biblionumber, biblio.title, biblio.author\nORDER BY 3 DESC, 1\nLIMIT 50"
+  },
+  {
+    "slug": "overdue-items-with-contact",
+    "group": "circulation",
+    "title": "Overdue items with patron contact details",
+    "summary": "Every overdue loan at one library, with the patron's card number, email and phone, oldest first.",
+    "audience": "staff",
+    "parameters": [
+      {
+        "placeholder": "Library|branches",
+        "sample": "CPL",
+        "prompt": "the library (pick from the list Koha shows)"
+      }
+    ],
+    "path": "reports/circulation/overdue-items-with-contact",
+    "sql": "SELECT borrowers.cardnumber AS 'Card number',\n       CONCAT_WS(' ', borrowers.firstname, borrowers.surname) AS 'Patron',\n       borrowers.email AS 'Email',\n       borrowers.phone AS 'Phone',\n       biblio.title AS 'Title',\n       items.barcode AS 'Barcode',\n       DATE(issues.date_due) AS 'Due',\n       DATEDIFF(CURDATE(), issues.date_due) AS 'Days overdue'\nFROM issues\nJOIN borrowers ON borrowers.borrowernumber = issues.borrowernumber\nJOIN items ON items.itemnumber = issues.itemnumber\nJOIN biblio ON biblio.biblionumber = items.biblionumber\nWHERE issues.date_due < NOW()\n  AND issues.branchcode = <<Library|branches>>\nORDER BY issues.date_due"
+  },
+  {
+    "slug": "collection-by-item-type",
+    "group": "collection",
+    "title": "Collection size by library, item type and collection",
+    "summary": "How many copies each library holds, by item type and collection code, and how many are on loan now.",
+    "audience": "everyone",
+    "parameters": [],
+    "path": "reports/collection/collection-by-item-type",
+    "sql": "SELECT branches.branchname AS 'Library',\n       COALESCE(itemtypes.description, items.itype) AS 'Item type',\n       COALESCE(ccode.lib, items.ccode) AS 'Collection',\n       COUNT(*) AS 'Copies',\n       SUM(items.onloan IS NOT NULL) AS 'On loan'\nFROM items\nLEFT JOIN branches ON branches.branchcode = items.homebranch\nLEFT JOIN itemtypes ON itemtypes.itemtype = items.itype\nLEFT JOIN authorised_values ccode ON ccode.category = 'CCODE' AND ccode.authorised_value = items.ccode\nWHERE items.withdrawn = 0\n  AND items.itemlost = 0\nGROUP BY branches.branchname, items.itype, itemtypes.description, items.ccode, ccode.lib\nORDER BY 1, 2, 3"
+  },
+  {
+    "slug": "items-without-barcode",
+    "group": "collection",
+    "title": "Items without a barcode",
+    "summary": "Copies that have no barcode, so they cannot be checked out at the desk.",
+    "audience": "everyone",
+    "parameters": [],
+    "path": "reports/collection/items-without-barcode",
+    "sql": "SELECT items.itemnumber AS 'Item number',\n       biblio.title AS 'Title',\n       branches.branchname AS 'Library',\n       items.itemcallnumber AS 'Call number',\n       items.dateaccessioned AS 'Added'\nFROM items\nJOIN biblio ON biblio.biblionumber = items.biblionumber\nLEFT JOIN branches ON branches.branchcode = items.homebranch\nWHERE items.barcode IS NULL OR items.barcode = ''\nORDER BY 3, 2"
+  },
+  {
+    "slug": "items-without-call-number",
+    "group": "collection",
+    "title": "Items without a call number",
+    "summary": "Copies at one library with no call number, so patrons cannot find them on the shelf.",
+    "audience": "everyone",
+    "parameters": [
+      {
+        "placeholder": "Library|branches",
+        "sample": "CPL",
+        "prompt": "the library (pick from the list Koha shows)"
+      }
+    ],
+    "path": "reports/collection/items-without-call-number",
+    "sql": "SELECT items.barcode AS 'Barcode',\n       biblio.title AS 'Title',\n       biblio.author AS 'Author',\n       itemtypes.description AS 'Item type',\n       items.location AS 'Shelving location',\n       items.dateaccessioned AS 'Added'\nFROM items\nJOIN biblio ON biblio.biblionumber = items.biblionumber\nLEFT JOIN itemtypes ON itemtypes.itemtype = items.itype\nWHERE items.homebranch = <<Library|branches>>\n  AND (items.itemcallnumber IS NULL OR items.itemcallnumber = '')\n  AND items.withdrawn = 0\nORDER BY items.dateaccessioned DESC"
+  },
+  {
+    "slug": "lost-and-withdrawn-items",
+    "group": "collection",
+    "title": "Lost and withdrawn items",
+    "summary": "Every copy at one library marked lost or withdrawn, with the status and the date it changed.",
+    "audience": "everyone",
+    "parameters": [
+      {
+        "placeholder": "Library|branches",
+        "sample": "CPL",
+        "prompt": "the library (pick from the list Koha shows)"
+      }
+    ],
+    "path": "reports/collection/lost-and-withdrawn-items",
+    "sql": "SELECT items.barcode AS 'Barcode',\n       biblio.title AS 'Title',\n       items.itemcallnumber AS 'Call number',\n       CASE WHEN items.itemlost <> 0 THEN 'Lost' ELSE 'Withdrawn' END AS 'Status',\n       CASE WHEN items.itemlost <> 0 THEN lost.lib ELSE withdrawn.lib END AS 'Reason',\n       CASE WHEN items.itemlost <> 0 THEN items.itemlost_on ELSE items.withdrawn_on END AS 'Since',\n       items.replacementprice AS 'Replacement price'\nFROM items\nJOIN biblio ON biblio.biblionumber = items.biblionumber\nLEFT JOIN authorised_values lost ON lost.category = 'LOST' AND lost.authorised_value = items.itemlost\nLEFT JOIN authorised_values withdrawn ON withdrawn.category = 'WITHDRAWN' AND withdrawn.authorised_value = items.withdrawn\nWHERE items.homebranch = <<Library|branches>>\n  AND (items.itemlost <> 0 OR items.withdrawn <> 0)\nORDER BY 6 DESC"
+  },
+  {
+    "slug": "new-acquisitions",
+    "group": "collection",
+    "title": "New acquisitions in a period",
+    "summary": "Copies added to one library's collection between two dates, newest first.",
+    "audience": "everyone",
+    "parameters": [
+      {
+        "placeholder": "Library|branches",
+        "sample": "CPL",
+        "prompt": "the library (pick from the list Koha shows)"
+      },
+      {
+        "placeholder": "From|date",
+        "sample": "2026-09-01",
+        "prompt": "first day of the period"
+      },
+      {
+        "placeholder": "To|date",
+        "sample": "2026-11-07",
+        "prompt": "last day of the period (included)"
+      }
+    ],
+    "path": "reports/collection/new-acquisitions",
+    "sql": "SELECT items.dateaccessioned AS 'Added',\n       items.barcode AS 'Barcode',\n       biblio.title AS 'Title',\n       biblio.author AS 'Author',\n       items.itemcallnumber AS 'Call number',\n       itemtypes.description AS 'Item type',\n       items.price AS 'Price'\nFROM items\nJOIN biblio ON biblio.biblionumber = items.biblionumber\nLEFT JOIN itemtypes ON itemtypes.itemtype = items.itype\nWHERE items.homebranch = <<Library|branches>>\n  AND items.dateaccessioned BETWEEN <<From|date>> AND <<To|date>>\nORDER BY items.dateaccessioned DESC, biblio.title"
+  },
+  {
+    "slug": "records-without-items",
+    "group": "collection",
+    "title": "Records with no items",
+    "summary": "Catalogue records that have no copies attached, newest first.",
+    "audience": "everyone",
+    "parameters": [],
+    "path": "reports/collection/records-without-items",
+    "sql": "SELECT biblio.biblionumber AS 'Record number',\n       biblio.title AS 'Title',\n       biblio.author AS 'Author',\n       biblio.frameworkcode AS 'Framework',\n       biblio.datecreated AS 'Date created'\nFROM biblio\nLEFT JOIN items ON items.biblionumber = biblio.biblionumber\nWHERE items.itemnumber IS NULL\nORDER BY biblio.datecreated DESC"
+  },
+  {
+    "slug": "hold-ratios",
+    "group": "holds",
+    "title": "Titles with more holds than copies",
+    "summary": "Titles where waiting holds outnumber the copies that can fill them: the list to buy more copies from.",
+    "audience": "everyone",
+    "parameters": [],
+    "path": "reports/holds/hold-ratios",
+    "sql": "SELECT biblio.title AS 'Title',\n       biblio.author AS 'Author',\n       h.holds AS 'Holds',\n       COALESCE(c.copies, 0) AS 'Copies',\n       ROUND(h.holds / NULLIF(c.copies, 0), 1) AS 'Holds per copy'\nFROM (\n    SELECT reserves.biblionumber, COUNT(*) AS holds\n    FROM reserves\n    WHERE reserves.found IS NULL\n    GROUP BY reserves.biblionumber\n) h\nJOIN biblio ON biblio.biblionumber = h.biblionumber\nLEFT JOIN (\n    SELECT items.biblionumber, COUNT(*) AS copies\n    FROM items\n    WHERE items.itemlost = 0 AND items.withdrawn = 0 AND items.notforloan = 0\n    GROUP BY items.biblionumber\n) c ON c.biblionumber = h.biblionumber\nWHERE h.holds > COALESCE(c.copies, 0)\nORDER BY (h.holds - COALESCE(c.copies, 0)) DESC, 1"
+  },
+  {
+    "slug": "holds-waiting-for-pickup",
+    "group": "holds",
+    "title": "Holds waiting for pickup",
+    "summary": "Holds on the hold shelf at one library, with how long each has waited and when it expires.",
+    "audience": "staff",
+    "parameters": [
+      {
+        "placeholder": "Library|branches",
+        "sample": "CPL",
+        "prompt": "the library (pick from the list Koha shows)"
+      }
+    ],
+    "path": "reports/holds/holds-waiting-for-pickup",
+    "sql": "SELECT reserves.waitingdate AS 'Waiting since',\n       DATEDIFF(CURDATE(), reserves.waitingdate) AS 'Days waiting',\n       reserves.expirationdate AS 'Pickup by',\n       borrowers.cardnumber AS 'Card number',\n       CONCAT_WS(' ', borrowers.firstname, borrowers.surname) AS 'Patron',\n       biblio.title AS 'Title',\n       items.barcode AS 'Barcode'\nFROM reserves\nJOIN borrowers ON borrowers.borrowernumber = reserves.borrowernumber\nJOIN biblio ON biblio.biblionumber = reserves.biblionumber\nLEFT JOIN items ON items.itemnumber = reserves.itemnumber\nWHERE reserves.found = 'W'\n  AND reserves.branchcode = <<Library|branches>>\nORDER BY reserves.waitingdate"
+  },
+  {
+    "slug": "fines-outstanding-by-patron",
+    "group": "money",
+    "title": "Outstanding charges by patron",
+    "summary": "Every patron who owes money, how much, and the date of their oldest unpaid charge, largest first.",
+    "audience": "staff",
+    "parameters": [],
+    "path": "reports/money/fines-outstanding-by-patron",
+    "sql": "SELECT borrowers.cardnumber AS 'Card number',\n       CONCAT_WS(' ', borrowers.firstname, borrowers.surname) AS 'Patron',\n       categories.description AS 'Category',\n       branches.branchname AS 'Library',\n       SUM(accountlines.amountoutstanding) AS 'Owed',\n       DATE(MIN(accountlines.date)) AS 'Oldest unpaid charge'\nFROM accountlines\nJOIN borrowers ON borrowers.borrowernumber = accountlines.borrowernumber\nLEFT JOIN categories ON categories.categorycode = borrowers.categorycode\nLEFT JOIN branches ON branches.branchcode = borrowers.branchcode\nWHERE accountlines.amountoutstanding > 0\nGROUP BY borrowers.borrowernumber, borrowers.cardnumber, borrowers.firstname, borrowers.surname,\n         categories.description, branches.branchname\nORDER BY 5 DESC"
+  },
+  {
+    "slug": "payments-collected",
+    "group": "money",
+    "title": "Payments collected in a period",
+    "summary": "Money collected between two dates, by library and payment type: for reconciling the cash desk.",
+    "audience": "everyone",
+    "parameters": [
+      {
+        "placeholder": "From|date",
+        "sample": "2026-09-01",
+        "prompt": "first day of the period"
+      },
+      {
+        "placeholder": "To|date",
+        "sample": "2026-11-07",
+        "prompt": "last day of the period (included)"
+      }
+    ],
+    "path": "reports/money/payments-collected",
+    "sql": "SELECT branches.branchname AS 'Library',\n       COALESCE(accountlines.payment_type, '(not recorded)') AS 'Payment type',\n       COUNT(*) AS 'Payments',\n       -SUM(accountlines.amount) AS 'Total collected'\nFROM accountlines\nLEFT JOIN branches ON branches.branchcode = accountlines.branchcode\nWHERE accountlines.credit_type_code = 'PAYMENT'\n  AND (accountlines.status IS NULL OR accountlines.status <> 'VOID')\n  AND accountlines.date >= <<From|date>>\n  AND accountlines.date < <<To|date>> + INTERVAL 1 DAY\nGROUP BY branches.branchname, accountlines.payment_type\nORDER BY 1, 2"
+  },
+  {
+    "slug": "new-patrons",
+    "group": "patrons",
+    "title": "New patrons in a period",
+    "summary": "How many patrons joined between two dates, by library and patron category.",
+    "audience": "everyone",
+    "parameters": [
+      {
+        "placeholder": "From|date",
+        "sample": "2026-09-01",
+        "prompt": "first day of the period"
+      },
+      {
+        "placeholder": "To|date",
+        "sample": "2026-11-07",
+        "prompt": "last day of the period (included)"
+      }
+    ],
+    "path": "reports/patrons/new-patrons",
+    "sql": "SELECT branches.branchname AS 'Library',\n       categories.description AS 'Category',\n       COUNT(*) AS 'New patrons'\nFROM borrowers\nLEFT JOIN branches ON branches.branchcode = borrowers.branchcode\nLEFT JOIN categories ON categories.categorycode = borrowers.categorycode\nWHERE borrowers.dateenrolled BETWEEN <<From|date>> AND <<To|date>>\nGROUP BY branches.branchname, categories.description\nORDER BY 1, 2"
+  },
+  {
+    "slug": "patrons-by-category",
+    "group": "patrons",
+    "title": "Patrons by library and category",
+    "summary": "How many patrons each library has in each category, split into current and expired memberships.",
+    "audience": "everyone",
+    "parameters": [],
+    "path": "reports/patrons/patrons-by-category",
+    "sql": "SELECT branches.branchname AS 'Library',\n       categories.description AS 'Category',\n       SUM(borrowers.dateexpiry >= CURDATE() OR borrowers.dateexpiry IS NULL) AS 'Current',\n       SUM(borrowers.dateexpiry < CURDATE()) AS 'Expired',\n       COUNT(*) AS 'Total'\nFROM borrowers\nLEFT JOIN branches ON branches.branchcode = borrowers.branchcode\nLEFT JOIN categories ON categories.categorycode = borrowers.categorycode\nGROUP BY branches.branchname, categories.description\nORDER BY 1, 2"
+  },
+  {
+    "slug": "patrons-expiring-soon",
+    "group": "patrons",
+    "title": "Patrons whose membership expires soon",
+    "summary": "Patrons whose membership expires within the next N days, with contact details, soonest first.",
+    "audience": "staff",
+    "parameters": [
+      {
+        "placeholder": "Days ahead",
+        "sample": "365",
+        "prompt": "how many days ahead to look, e.g. 30"
+      }
+    ],
+    "path": "reports/patrons/patrons-expiring-soon",
+    "sql": "SELECT borrowers.cardnumber AS 'Card number',\n       CONCAT_WS(' ', borrowers.firstname, borrowers.surname) AS 'Patron',\n       categories.description AS 'Category',\n       branches.branchname AS 'Library',\n       borrowers.email AS 'Email',\n       borrowers.dateexpiry AS 'Expires'\nFROM borrowers\nLEFT JOIN categories ON categories.categorycode = borrowers.categorycode\nLEFT JOIN branches ON branches.branchcode = borrowers.branchcode\nWHERE borrowers.dateexpiry BETWEEN CURDATE() AND CURDATE() + INTERVAL <<Days ahead>> DAY\nORDER BY borrowers.dateexpiry, borrowers.surname"
+  }
+]

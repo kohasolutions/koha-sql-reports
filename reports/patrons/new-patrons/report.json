@@ -1,0 +1,19 @@
+{
+  "slug": "new-patrons",
+  "group": "patrons",
+  "title": "New patrons in a period",
+  "summary": "How many patrons joined between two dates, by library and patron category.",
+  "audience": "everyone",
+  "parameters": [
+    {
+      "placeholder": "From|date",
+      "sample": "2026-09-01",
+      "prompt": "first day of the period"
+    },
+    {
+      "placeholder": "To|date",
+      "sample": "2026-11-07",
+      "prompt": "last day of the period (included)"
+    }
+  ]
+}

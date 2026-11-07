@@ -1,0 +1,14 @@
+{
+  "slug": "items-without-call-number",
+  "group": "collection",
+  "title": "Items without a call number",
+  "summary": "Copies at one library with no call number, so patrons cannot find them on the shelf.",
+  "audience": "everyone",
+  "parameters": [
+    {
+      "placeholder": "Library|branches",
+      "sample": "CPL",
+      "prompt": "the library (pick from the list Koha shows)"
+    }
+  ]
+}

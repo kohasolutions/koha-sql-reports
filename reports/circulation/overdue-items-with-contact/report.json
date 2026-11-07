@@ -1,0 +1,14 @@
+{
+  "slug": "overdue-items-with-contact",
+  "group": "circulation",
+  "title": "Overdue items with patron contact details",
+  "summary": "Every overdue loan at one library, with the patron's card number, email and phone, oldest first.",
+  "audience": "staff",
+  "parameters": [
+    {
+      "placeholder": "Library|branches",
+      "sample": "CPL",
+      "prompt": "the library (pick from the list Koha shows)"
+    }
+  ]
+}

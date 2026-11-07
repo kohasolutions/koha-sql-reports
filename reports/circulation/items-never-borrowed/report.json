@@ -1,0 +1,14 @@
+{
+  "slug": "items-never-borrowed",
+  "group": "circulation",
+  "title": "Items never borrowed",
+  "summary": "Copies at one library that have never been checked out, oldest first: candidates for weeding or promotion.",
+  "audience": "everyone",
+  "parameters": [
+    {
+      "placeholder": "Library|branches",
+      "sample": "CPL",
+      "prompt": "the library (pick from the list Koha shows)"
+    }
+  ]
+}

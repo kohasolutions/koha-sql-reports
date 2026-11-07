@@ -1,0 +1,8 @@
+{
+  "slug": "items-without-barcode",
+  "group": "collection",
+  "title": "Items without a barcode",
+  "summary": "Copies that have no barcode, so they cannot be checked out at the desk.",
+  "audience": "everyone",
+  "parameters": []
+}

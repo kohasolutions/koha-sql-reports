@@ -1,0 +1,8 @@
+{
+  "slug": "fines-outstanding-by-patron",
+  "group": "money",
+  "title": "Outstanding charges by patron",
+  "summary": "Every patron who owes money, how much, and the date of their oldest unpaid charge, largest first.",
+  "audience": "staff",
+  "parameters": []
+}

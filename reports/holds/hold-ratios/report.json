@@ -1,0 +1,8 @@
+{
+  "slug": "hold-ratios",
+  "group": "holds",
+  "title": "Titles with more holds than copies",
+  "summary": "Titles where waiting holds outnumber the copies that can fill them: the list to buy more copies from.",
+  "audience": "everyone",
+  "parameters": []
+}

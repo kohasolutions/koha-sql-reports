@@ -1,0 +1,24 @@
+{
+  "slug": "circulation-by-month",
+  "group": "circulation",
+  "title": "Checkouts, renewals and returns by month",
+  "summary": "Monthly totals of checkouts, renewals and returns at one library for a period: the numbers most annual reports ask for.",
+  "audience": "everyone",
+  "parameters": [
+    {
+      "placeholder": "Library|branches",
+      "sample": "CPL",
+      "prompt": "the library (pick from the list Koha shows)"
+    },
+    {
+      "placeholder": "From|date",
+      "sample": "2026-09-01",
+      "prompt": "first day of the period"
+    },
+    {
+      "placeholder": "To|date",
+      "sample": "2026-11-07",
+      "prompt": "last day of the period (included)"
+    }
+  ]
+}

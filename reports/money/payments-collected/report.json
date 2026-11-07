@@ -1,0 +1,19 @@
+{
+  "slug": "payments-collected",
+  "group": "money",
+  "title": "Payments collected in a period",
+  "summary": "Money collected between two dates, by library and payment type: for reconciling the cash desk.",
+  "audience": "everyone",
+  "parameters": [
+    {
+      "placeholder": "From|date",
+      "sample": "2026-09-01",
+      "prompt": "first day of the period"
+    },
+    {
+      "placeholder": "To|date",
+      "sample": "2026-11-07",
+      "prompt": "last day of the period (included)"
+    }
+  ]
+}

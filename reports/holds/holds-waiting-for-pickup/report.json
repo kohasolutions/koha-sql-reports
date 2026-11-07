@@ -1,0 +1,14 @@
+{
+  "slug": "holds-waiting-for-pickup",
+  "group": "holds",
+  "title": "Holds waiting for pickup",
+  "summary": "Holds on the hold shelf at one library, with how long each has waited and when it expires.",
+  "audience": "staff",
+  "parameters": [
+    {
+      "placeholder": "Library|branches",
+      "sample": "CPL",
+      "prompt": "the library (pick from the list Koha shows)"
+    }
+  ]
+}

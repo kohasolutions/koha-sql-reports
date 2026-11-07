@@ -1,0 +1,8 @@
+{
+  "slug": "current-loans-by-library",
+  "group": "circulation",
+  "title": "Current loans by library",
+  "summary": "How many items are on loan right now at each library, and how many of those are overdue.",
+  "audience": "everyone",
+  "parameters": []
+}
