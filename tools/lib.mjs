@@ -75,11 +75,43 @@ export function problems(r, tables) {
     for (const d of declared) if (!used.includes(d)) p.push(`parameter "${d}" is declared but not used in report.sql`)
     for (const x of r.meta.parameters ?? []) if (x.sample === undefined || x.sample === '') p.push(`parameter "${x.placeholder}" has no sample value for the test run`)
   }
+  p.push(...nameOnlyGroups(sql))
   if (tables) {
     // table.column references where the prefix is a real table name must name a real column (aliases are skipped)
     for (const m of sql.matchAll(/\b([a-z_]+)\.([a-z_0-9]+)\b/g)) {
       const cols = tables.get(m[1])
       if (cols && !cols.has(m[2])) p.push(`${m[1]}.${m[2]} is not a column in this Koha version's schema`)
+    }
+  }
+  return p
+}
+
+/**
+ * Names are not unique in Koha: two libraries or two patron categories may have the same one. Grouping by a looked-up
+ * name alone adds them together, so the GROUP BY must also have the code the name was looked up by (or a key that
+ * already decides it, such as borrowers.borrowernumber).
+ */
+export function nameOnlyGroups(sql) {
+  const p = []
+  const joins = new Map()
+  for (const m of sql.matchAll(/\bJOIN\s+(\w+)(?:\s+(?!ON\b)(\w+))?\s+ON\s+([\s\S]*?)(?=\s+(?:(?:LEFT|INNER)\s+)?JOIN\b|\s+WHERE\b|\s+GROUP\s+BY\b|\s+ORDER\s+BY\b|$)/gi)) {
+    const on = /(\w+\.\w+)\s*=\s*(\w+\.\w+)/.exec(m[3])
+    if (!on) continue
+    const alias = m[2] ?? m[1]
+    joins.set(alias, on[1].startsWith(`${alias}.`) ? [on[1], on[2]] : [on[2], on[1]])
+  }
+  for (const g of sql.matchAll(/\bGROUP\s+BY\s+([\s\S]*?)(?=\s+(?:HAVING|ORDER|LIMIT)\b|\)|$)/gi)) {
+    const cols = g[1].split(',').map((c) => c.trim())
+    const decided = (alias, seen = new Set()) => {
+      const j = joins.get(alias)
+      if (!j) return true // the table the report starts from: its own columns
+      if (cols.includes(j[0]) || cols.includes(j[1])) return true
+      const parent = j[1].split('.')[0]
+      return !seen.has(parent) && joins.has(parent) && decided(parent, new Set([...seen, alias]))
+    }
+    for (const c of cols) {
+      const alias = /^(\w+)\.\w+$/.exec(c)?.[1]
+      if (alias && !decided(alias)) p.push(`groups by ${c} without ${joins.get(alias)[1]}: two with the same name would be added together`)
     }
   }
   return p

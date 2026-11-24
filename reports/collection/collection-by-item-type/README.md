@@ -18,6 +18,10 @@ How many copies each library holds, by item type and collection code, and how ma
 | Copies | copies held, not counting lost or withdrawn ones |
 | On loan | of those, checked out now |
 
+## Notes
+
+- Two libraries with the same name are counted separately, each on its own row.
+
 ## Checked on
 
 See [`TESTED.md`](../../../TESTED.md): every report is run through Koha's own report engine before each release.

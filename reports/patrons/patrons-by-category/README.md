@@ -15,6 +15,10 @@ How many patrons each library has in each category, split into current and expir
 | Current | membership has not expired (or has no expiry date) |
 | Expired | membership expiry date has passed |
 
+## Notes
+
+- Two libraries or patron categories with the same name are counted separately, each on its own row.
+
 ## Checked on
 
 See [`TESTED.md`](../../../TESTED.md): every report is run through Koha's own report engine before each release.
