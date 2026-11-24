@@ -5,5 +5,5 @@ FROM borrowers
 LEFT JOIN branches ON branches.branchcode = borrowers.branchcode
 LEFT JOIN categories ON categories.categorycode = borrowers.categorycode
 WHERE borrowers.dateenrolled BETWEEN <<From|date>> AND <<To|date>>
-GROUP BY branches.branchname, categories.description
+GROUP BY borrowers.branchcode, branches.branchname, borrowers.categorycode, categories.description
 ORDER BY 1, 2

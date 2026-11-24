@@ -26,6 +26,7 @@ How many patrons joined between two dates, by library and patron category.
 ## Notes
 
 - Counts only patrons who still exist; patrons deleted since are not in the borrowers table.
+- Two libraries or patron categories with the same name are counted separately, each on its own row.
 
 ## Checked on
 

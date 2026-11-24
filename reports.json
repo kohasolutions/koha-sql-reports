@@ -96,7 +96,7 @@
     "audience": "everyone",
     "parameters": [],
     "path": "reports/collection/collection-by-item-type",
-    "sql": "SELECT branches.branchname AS 'Library',\n       COALESCE(itemtypes.description, items.itype) AS 'Item type',\n       COALESCE(ccode.lib, items.ccode) AS 'Collection',\n       COUNT(*) AS 'Copies',\n       SUM(items.onloan IS NOT NULL) AS 'On loan'\nFROM items\nLEFT JOIN branches ON branches.branchcode = items.homebranch\nLEFT JOIN itemtypes ON itemtypes.itemtype = items.itype\nLEFT JOIN authorised_values ccode ON ccode.category = 'CCODE' AND ccode.authorised_value = items.ccode\nWHERE items.withdrawn = 0\n  AND items.itemlost = 0\nGROUP BY branches.branchname, items.itype, itemtypes.description, items.ccode, ccode.lib\nORDER BY 1, 2, 3"
+    "sql": "SELECT branches.branchname AS 'Library',\n       COALESCE(itemtypes.description, items.itype) AS 'Item type',\n       COALESCE(ccode.lib, items.ccode) AS 'Collection',\n       COUNT(*) AS 'Copies',\n       SUM(items.onloan IS NOT NULL) AS 'On loan'\nFROM items\nLEFT JOIN branches ON branches.branchcode = items.homebranch\nLEFT JOIN itemtypes ON itemtypes.itemtype = items.itype\nLEFT JOIN authorised_values ccode ON ccode.category = 'CCODE' AND ccode.authorised_value = items.ccode\nWHERE items.withdrawn = 0\n  AND items.itemlost = 0\nGROUP BY items.homebranch, branches.branchname, items.itype, itemtypes.description, items.ccode, ccode.lib\nORDER BY 1, 2, 3"
   },
   {
     "slug": "items-without-barcode",
@@ -231,7 +231,7 @@
       }
     ],
     "path": "reports/money/payments-collected",
-    "sql": "SELECT branches.branchname AS 'Library',\n       COALESCE(accountlines.payment_type, '(not recorded)') AS 'Payment type',\n       COUNT(*) AS 'Payments',\n       -SUM(accountlines.amount) AS 'Total collected'\nFROM accountlines\nLEFT JOIN branches ON branches.branchcode = accountlines.branchcode\nWHERE accountlines.credit_type_code = 'PAYMENT'\n  AND (accountlines.status IS NULL OR accountlines.status <> 'VOID')\n  AND accountlines.date >= <<From|date>>\n  AND accountlines.date < <<To|date>> + INTERVAL 1 DAY\nGROUP BY branches.branchname, accountlines.payment_type\nORDER BY 1, 2"
+    "sql": "SELECT branches.branchname AS 'Library',\n       COALESCE(accountlines.payment_type, '(not recorded)') AS 'Payment type',\n       COUNT(*) AS 'Payments',\n       -SUM(accountlines.amount) AS 'Total collected'\nFROM accountlines\nLEFT JOIN branches ON branches.branchcode = accountlines.branchcode\nWHERE accountlines.credit_type_code = 'PAYMENT'\n  AND (accountlines.status IS NULL OR accountlines.status <> 'VOID')\n  AND accountlines.date >= <<From|date>>\n  AND accountlines.date < <<To|date>> + INTERVAL 1 DAY\nGROUP BY accountlines.branchcode, branches.branchname, accountlines.payment_type\nORDER BY 1, 2"
   },
   {
     "slug": "new-patrons",
@@ -252,7 +252,7 @@
       }
     ],
     "path": "reports/patrons/new-patrons",
-    "sql": "SELECT branches.branchname AS 'Library',\n       categories.description AS 'Category',\n       COUNT(*) AS 'New patrons'\nFROM borrowers\nLEFT JOIN branches ON branches.branchcode = borrowers.branchcode\nLEFT JOIN categories ON categories.categorycode = borrowers.categorycode\nWHERE borrowers.dateenrolled BETWEEN <<From|date>> AND <<To|date>>\nGROUP BY branches.branchname, categories.description\nORDER BY 1, 2"
+    "sql": "SELECT branches.branchname AS 'Library',\n       categories.description AS 'Category',\n       COUNT(*) AS 'New patrons'\nFROM borrowers\nLEFT JOIN branches ON branches.branchcode = borrowers.branchcode\nLEFT JOIN categories ON categories.categorycode = borrowers.categorycode\nWHERE borrowers.dateenrolled BETWEEN <<From|date>> AND <<To|date>>\nGROUP BY borrowers.branchcode, branches.branchname, borrowers.categorycode, categories.description\nORDER BY 1, 2"
   },
   {
     "slug": "patrons-by-category",
@@ -262,7 +262,7 @@
     "audience": "everyone",
     "parameters": [],
     "path": "reports/patrons/patrons-by-category",
-    "sql": "SELECT branches.branchname AS 'Library',\n       categories.description AS 'Category',\n       SUM(borrowers.dateexpiry >= CURDATE() OR borrowers.dateexpiry IS NULL) AS 'Current',\n       SUM(borrowers.dateexpiry < CURDATE()) AS 'Expired',\n       COUNT(*) AS 'Total'\nFROM borrowers\nLEFT JOIN branches ON branches.branchcode = borrowers.branchcode\nLEFT JOIN categories ON categories.categorycode = borrowers.categorycode\nGROUP BY branches.branchname, categories.description\nORDER BY 1, 2"
+    "sql": "SELECT branches.branchname AS 'Library',\n       categories.description AS 'Category',\n       SUM(borrowers.dateexpiry >= CURDATE() OR borrowers.dateexpiry IS NULL) AS 'Current',\n       SUM(borrowers.dateexpiry < CURDATE()) AS 'Expired',\n       COUNT(*) AS 'Total'\nFROM borrowers\nLEFT JOIN branches ON branches.branchcode = borrowers.branchcode\nLEFT JOIN categories ON categories.categorycode = borrowers.categorycode\nGROUP BY borrowers.branchcode, branches.branchname, borrowers.categorycode, categories.description\nORDER BY 1, 2"
   },
   {
     "slug": "patrons-expiring-soon",

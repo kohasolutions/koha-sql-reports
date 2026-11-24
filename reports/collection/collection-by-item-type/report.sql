@@ -9,5 +9,5 @@ LEFT JOIN itemtypes ON itemtypes.itemtype = items.itype
 LEFT JOIN authorised_values ccode ON ccode.category = 'CCODE' AND ccode.authorised_value = items.ccode
 WHERE items.withdrawn = 0
   AND items.itemlost = 0
-GROUP BY branches.branchname, items.itype, itemtypes.description, items.ccode, ccode.lib
+GROUP BY items.homebranch, branches.branchname, items.itype, itemtypes.description, items.ccode, ccode.lib
 ORDER BY 1, 2, 3

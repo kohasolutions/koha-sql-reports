@@ -12,7 +12,7 @@ import { join } from 'node:path'
 import { compile, kohaRefuses } from '../src/compile.ts'
 import { SUBJECTS } from '../src/model.ts'
 import { OPS, groupId, groupable, isDate, read } from '../src/spec.ts'
-import { EXPECT, SAME, SETUP, TABLES } from './fixtures.mjs'
+import { EXPECT, ONE_NAME, SAME, SETUP, TABLES } from './fixtures.mjs'
 import { ROOT, loadReports, placeholders } from './lib.mjs'
 
 const CONTAINER = process.env.KOHA_CONTAINER ?? 'koha-koha-1'
@@ -103,6 +103,11 @@ for (const [slug, spec] of SAME) {
   jobs.push({ ...mine, values: mine.names.map(ANSWER) }, { id: `${slug} ready`, sql: ready.get(slug).sql, names, values: names.map(ANSWER), rows: true })
 }
 
+for (const [slug] of ONE_NAME) {
+  const names = placeholders(ready.get(slug).sql)
+  jobs.push({ id: `${slug} one name`, sql: ready.get(slug).sql, names, values: names.map(ANSWER), rows: true })
+}
+
 const tmp = mkdtempSync(join(tmpdir(), 'koha-prove-'))
 const sh = (a) => execFileSync('docker', a, { encoding: 'utf8', maxBuffer: 256 << 20, stdio: ['ignore', 'pipe', 'pipe'] })
 let out
@@ -140,18 +145,19 @@ for (const [id, , want, , how] of EXPECT) {
   const ok = how === 'has' ? want.every((w) => got.some((g) => text(g) === text(w))) : how === 'any order' ? text([...got].sort()) === text([...want].sort()) : text(got) === text(want)
   if (!ok) bad.push(`${id}:\n    got  ${text(got)}\n    want ${text(want)}`)
 }
-// rows with the same words added up: the ready report groups by the words only
-const fold = (rows) => [...rows.reduce((m, r) => m.set(text(r.slice(0, -1)), (m.get(text(r.slice(0, -1))) ?? 0) + Number(r.at(-1))), new Map())].map(([k, n]) => [...JSON.parse(k), String(n)])
-for (const [slug, , keep, folded] of SAME) {
-  let [made, want] = ['made', 'ready'].map((k) => byId.get(`${slug} ${k}`)?.rows)
-  if (made && folded) made = fold(made)
+for (const [slug, , keep] of SAME) {
+  const [made, want] = ['made', 'ready'].map((k) => byId.get(`${slug} ${k}`)?.rows)
   if (!made || !want) continue
   const cut = want.map((r) => (keep ? keep.map((i) => r[i]) : r))
   if (!made.length) bad.push(`${slug}: no rows to compare`)
   if (text(made.map(text).sort()) !== text(cut.map(text).sort())) bad.push(`${slug}: the made report and the ready one differ: ${text(made.slice(0, 3))} / ${text(cut.slice(0, 3))} (${made.length} / ${cut.length})`)
 }
+for (const [slug, start, want] of ONE_NAME) {
+  const got = (byId.get(`${slug} one name`)?.rows ?? []).filter((r) => start.every((v, i) => r[i] === v))
+  if (text(got.map(text).sort()) !== text(want.map(text).sort())) bad.push(`${slug}, two with one name:\n    got  ${text(got)}\n    want ${text(want)}`)
+}
 for (const b of bad.slice(0, 25)) console.error(`✗ ${b}`)
-const line = `${COVERAGE} reports covering every column, filter, group and total; ${RANDOM} made-up reports; ${Object.keys(SUBJECTS).length} subjects with every join; ${EXPECT.length} reports against known data; ${SAME.length} the same as a ready report`
+const line = `${COVERAGE} reports covering every column, filter, group and total; ${RANDOM} made-up reports; ${Object.keys(SUBJECTS).length} subjects with every join; ${EXPECT.length} reports against known data; ${SAME.length} the same as a ready report; ${ONE_NAME.length} ready reports with two libraries of one name`
 console.log(`Koha ${out.koha_version}, ${out.db_version}: ${line}. ${bad.length ? `${bad.length} FAILED` : 'All pass; nothing left in Koha.'}`)
 if (bad.length) process.exit(1)
 if (process.argv.includes('--write')) writeFileSync(join(ROOT, 'GENERATOR-TESTED.md'), `# The report generator, tested\n\nWritten by \`node tools/prove.mjs --write\`, never by hand.\n\n| Koha | Database | Date | Result |\n|---|---|---|---|\n| ${out.koha_version} | ${out.db_version} | ${new Date().toISOString().slice(0, 10)} | ${line}: all pass |\n`)

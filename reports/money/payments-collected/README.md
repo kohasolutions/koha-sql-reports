@@ -26,6 +26,7 @@ Money collected between two dates, by library and payment type: for reconciling 
 ## Notes
 
 - Voided payments are left out. Write-offs and forgiven amounts are not payments and are not counted.
+- Two libraries with the same name are counted separately, each on its own row.
 
 ## Checked on
 

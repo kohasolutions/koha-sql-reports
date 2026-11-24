@@ -57,6 +57,12 @@ export const SETUP = [
   "INSERT INTO aqbasket (basketname, booksellerid, creationdate) VALUES ('Proof basket', @v, CURDATE())", 'SET @bk = LAST_INSERT_ID()',
   ...[['2', '1', '10', 'NULL', 'NULL'], ['3', '3', '5', '4', 'NULL'], ['1', '1', '8', 'NULL', 'NULL'], ['9', '0', '99', 'NULL', "'2026-05-05'"]].map(([q, got, est, act, cancelled], n) =>
     `INSERT INTO aqorders (biblionumber, entrydate, quantity, quantityreceived, ecost_tax_included, unitprice_tax_included, budget_id, basketno, datecancellationprinted) VALUES (@b1, '2026-04-0${n + 1}', ${q}, ${n === 0 ? 0 : got}, ${est}, ${act}, @f, @bk, ${cancelled})`),
+  // a second library and a second patron category with the same names (ZZP3 has a patron of each category, ZZC and ZZD)
+  "INSERT INTO branches (branchcode, branchname) VALUES ('ZZP3', 'Proof One')",
+  "INSERT INTO categories (categorycode, description, category_type) VALUES ('ZZD', 'Proof patrons', 'A')",
+  `INSERT INTO borrowers (cardnumber, surname, firstname, branchcode, categorycode, dateenrolled, dateexpiry) VALUES ('ZZ003', 'Gamma', 'Gus', 'ZZP3', 'ZZC', ${D(-3)}, ${D(90)}), ('ZZ004', 'Delta', 'Dee', 'ZZP3', 'ZZD', ${D(-3)}, ${D(90)})`,
+  ...biblio('b4', 'Other title', 'E. Five'), ...item('i5', 'b4', 'ZZB5', { home: 'ZZP3' }),
+  "INSERT INTO accountlines (borrowernumber, date, amount, amountoutstanding, credit_type_code, payment_type, interface, branchcode) VALUES (@p1, CURDATE(), -5, 0, 'PAYMENT', 'CASH', 'intranet', 'ZZP3')",
 ]
 
 const lib = (column = 'library', values = ['ZZP1']) => ({ column, op: 'is', values })
@@ -114,13 +120,22 @@ export const EXPECT = [
 ].filter(([, , rows]) => rows !== null)
 
 /** Ready reports the generator can make too: the same rows, on whatever this Koha holds. [slug, spec, values Koha asks for] */
+/** Ready reports with two libraries (ZZP1, ZZP3) and two patron categories of one name: [report, the first columns of its rows, the rows that start with them] */
+export const ONE_NAME = [
+  ['current-loans-by-library', ['Proof One'], [['Proof One', '2', '1']]],
+  ['patrons-by-category', ['Proof One', 'Proof patrons'], [['Proof One', 'Proof patrons', '1', '0', '1'], ['Proof One', 'Proof patrons', '1', '0', '1'], ['Proof One', 'Proof patrons', '1', '0', '1']]],
+  ['new-patrons', ['Proof One', 'Proof patrons'], [['Proof One', 'Proof patrons', '1'], ['Proof One', 'Proof patrons', '1'], ['Proof One', 'Proof patrons', '1']]],
+  ['collection-by-item-type', ['Proof One', 'Proof book'], [['Proof One', 'Proof book', null, '1', '0'], ['Proof One', 'Proof book', null, '2', '1']]],
+  ['payments-collected', ['Proof One', 'CASH'], [['Proof One', 'CASH', '1', '3.000000'], ['Proof One', 'CASH', '1', '5.000000']]],
+]
+
 export const SAME = [
   ['current-loans-by-library', totals('loans', [{ column: 'library' }], ['rows', 'overdue'], [])],
   ['items-without-call-number', list('items', ['barcode', 'title', 'author', 'itemtype', 'added'], [{ column: 'home', op: 'ask' }, { column: 'callnumber', op: 'empty' }, { column: 'withdrawn', op: 'no' }]), ['barcode', 'title', 'author', 'itemtype', 'added'].map((_, i) => [0, 1, 2, 3, 5][i])],
   ['items-without-barcode', list('items', ['title', 'home', 'callnumber', 'added'], [{ column: 'barcode', op: 'empty' }]), [1, 2, 3, 4]],
   ['items-never-borrowed', list('items', ['barcode', 'title', 'author', 'callnumber', 'itemtype', 'added'], [{ column: 'home', op: 'ask' }, { column: 'checkouts', op: 'atMost', value: 0 }, { column: 'lastborrowed', op: 'empty' }, { column: 'lost', op: 'no' }, { column: 'withdrawn', op: 'no' }])],
   ['new-acquisitions', list('items', ['added', 'barcode', 'title', 'author', 'callnumber', 'itemtype', 'price'], [{ column: 'home', op: 'ask' }, { column: 'added', op: 'askBetween' }])],
-  ['new-patrons', totals('patrons', [{ column: 'library' }, { column: 'category' }], ['rows'], [{ column: 'joined', op: 'askBetween' }]), undefined, 'one name, two codes: the ready report adds them up'],
+  ['new-patrons', totals('patrons', [{ column: 'library' }, { column: 'category' }], ['rows'], [{ column: 'joined', op: 'askBetween' }])],
   ['overdue-items-with-contact', list('loans', ['cardnumber', 'patron', 'email', 'phone', 'title', 'barcode', 'daysoverdue'], [{ column: 'overdue', op: 'yes' }, { column: 'library', op: 'ask' }]), [0, 1, 2, 3, 4, 5, 7]],
   ['holds-waiting-for-pickup', list('holds', ['waitingsince', 'pickupby', 'cardnumber', 'patron', 'title', 'barcode'], [{ column: 'waiting', op: 'yes' }, { column: 'library', op: 'ask' }]), [0, 2, 3, 4, 5, 6]],
   ['records-without-items', list('records', ['number', 'title', 'author', 'created'], [{ column: 'copies', op: 'atMost', value: 0 }]), [0, 1, 2, 4]],
