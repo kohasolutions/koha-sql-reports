@@ -131,6 +131,8 @@ report that lists patrons is marked staff-only. See [CONTRIBUTING](https://githu
 
 ## Related
 
+- Knowledge base: [Koha SQL reports, step by step](https://kohasolutions.com/knowledge-base/koha-sql-reports)
+- [koha-backup](https://github.com/kohasolutions/koha-backup): scheduled Koha backups with a tested restore
 - Koha manual, Reports chapter: https://koha-community.org/manual/latest/en/html/reports.html
 - Koha database schema, table by table: https://schema.koha-community.org/
 - Practical answers to everyday Koha questions: [Koha knowledge base](https://kohasolutions.com/knowledge-base)
