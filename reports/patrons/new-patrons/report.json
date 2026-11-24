@@ -15,5 +15,26 @@
       "sample": "2026-11-07",
       "prompt": "last day of the period (included)"
     }
-  ]
+  ],
+  "spec": {
+    "subject": "patrons",
+    "mode": "totals",
+    "groups": [
+      {
+        "column": "library"
+      },
+      {
+        "column": "category"
+      }
+    ],
+    "measures": [
+      "rows"
+    ],
+    "filters": [
+      {
+        "column": "joined",
+        "op": "askBetween"
+      }
+    ]
+  }
 }

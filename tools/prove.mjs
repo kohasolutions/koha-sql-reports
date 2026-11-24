@@ -95,8 +95,8 @@ const jobs = [
 // the ready reports and their twins get the same answers to what Koha asks: the library with the sample data, long dates
 const ANSWER = (p) => (p.endsWith('|branches') ? 'ZZP1' : /from/i.test(p) ? '2000-01-01' : '2099-12-31')
 const ready = new Map(loadReports().map((r) => [r.slug, r]))
-for (const [slug, spec] of SAME) {
-  const r = read(spec)
+for (const [slug] of SAME) {
+  const r = read(ready.get(slug).meta.spec)
   if (!('spec' in r)) throw new Error(`${slug}: ${r.problems.join('; ')}`)
   const mine = job(`${slug} made`, r.spec, undefined, true)
   const names = placeholders(ready.get(slug).sql)
@@ -128,6 +128,7 @@ if (out.leaked) { console.error(`SAMPLE DATA LEFT IN KOHA: ${out.leaked}`); proc
 if (out.setup_error) { console.error(out.setup_error); process.exit(1) }
 
 const bad = []
+for (const r of ready.values()) if (Boolean(r.meta.spec) !== SAME.some(([slug]) => slug === r.slug)) bad.push(`${r.slug}: a report has a spec exactly when SAME compares it`)
 const byId = new Map(out.results.map((r) => [r.id, r]))
 for (const j of jobs) {
   const r = byId.get(j.id)
@@ -145,7 +146,7 @@ for (const [id, , want, , how] of EXPECT) {
   const ok = how === 'has' ? want.every((w) => got.some((g) => text(g) === text(w))) : how === 'any order' ? text([...got].sort()) === text([...want].sort()) : text(got) === text(want)
   if (!ok) bad.push(`${id}:\n    got  ${text(got)}\n    want ${text(want)}`)
 }
-for (const [slug, , keep] of SAME) {
+for (const [slug, keep] of SAME) {
   const [made, want] = ['made', 'ready'].map((k) => byId.get(`${slug} ${k}`)?.rows)
   if (!made || !want) continue
   const cut = want.map((r) => (keep ? keep.map((i) => r[i]) : r))

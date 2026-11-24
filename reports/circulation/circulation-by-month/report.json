@@ -20,5 +20,30 @@
       "sample": "2026-11-07",
       "prompt": "last day of the period (included)"
     }
-  ]
+  ],
+  "spec": {
+    "subject": "activity",
+    "mode": "totals",
+    "groups": [
+      {
+        "column": "when",
+        "part": "month"
+      }
+    ],
+    "measures": [
+      "checkouts",
+      "renewals",
+      "returns"
+    ],
+    "filters": [
+      {
+        "column": "library",
+        "op": "ask"
+      },
+      {
+        "column": "when",
+        "op": "askBetween"
+      }
+    ]
+  }
 }

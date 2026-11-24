@@ -129,15 +129,16 @@ export const ONE_NAME = [
   ['payments-collected', ['Proof One', 'CASH'], [['Proof One', 'CASH', '1', '3.000000'], ['Proof One', 'CASH', '1', '5.000000']]],
 ]
 
+/** The ready reports with a `spec` in report.json: the generator gives the same rows. [report, which of its columns the spec has, when not all] */
 export const SAME = [
-  ['current-loans-by-library', totals('loans', [{ column: 'library' }], ['rows', 'overdue'], [])],
-  ['items-without-call-number', list('items', ['barcode', 'title', 'author', 'itemtype', 'added'], [{ column: 'home', op: 'ask' }, { column: 'callnumber', op: 'empty' }, { column: 'withdrawn', op: 'no' }]), ['barcode', 'title', 'author', 'itemtype', 'added'].map((_, i) => [0, 1, 2, 3, 5][i])],
-  ['items-without-barcode', list('items', ['title', 'home', 'callnumber', 'added'], [{ column: 'barcode', op: 'empty' }]), [1, 2, 3, 4]],
-  ['items-never-borrowed', list('items', ['barcode', 'title', 'author', 'callnumber', 'itemtype', 'added'], [{ column: 'home', op: 'ask' }, { column: 'checkouts', op: 'atMost', value: 0 }, { column: 'lastborrowed', op: 'empty' }, { column: 'lost', op: 'no' }, { column: 'withdrawn', op: 'no' }])],
-  ['new-acquisitions', list('items', ['added', 'barcode', 'title', 'author', 'callnumber', 'itemtype', 'price'], [{ column: 'home', op: 'ask' }, { column: 'added', op: 'askBetween' }])],
-  ['new-patrons', totals('patrons', [{ column: 'library' }, { column: 'category' }], ['rows'], [{ column: 'joined', op: 'askBetween' }])],
-  ['overdue-items-with-contact', list('loans', ['cardnumber', 'patron', 'email', 'phone', 'title', 'barcode', 'daysoverdue'], [{ column: 'overdue', op: 'yes' }, { column: 'library', op: 'ask' }]), [0, 1, 2, 3, 4, 5, 7]],
-  ['holds-waiting-for-pickup', list('holds', ['waitingsince', 'pickupby', 'cardnumber', 'patron', 'title', 'barcode'], [{ column: 'waiting', op: 'yes' }, { column: 'library', op: 'ask' }]), [0, 2, 3, 4, 5, 6]],
-  ['records-without-items', list('records', ['number', 'title', 'author', 'created'], [{ column: 'copies', op: 'atMost', value: 0 }]), [0, 1, 2, 4]],
-  ['circulation-by-month', totals('activity', [{ column: 'when', part: 'month' }], ['checkouts', 'renewals', 'returns'], [{ column: 'library', op: 'ask' }, { column: 'when', op: 'askBetween' }])],
+  ['current-loans-by-library'],
+  ['items-without-call-number', [0, 1, 2, 3, 5]],
+  ['items-without-barcode', [1, 2, 3, 4]],
+  ['items-never-borrowed'],
+  ['new-acquisitions'],
+  ['new-patrons'],
+  ['overdue-items-with-contact', [0, 1, 2, 3, 4, 5, 7]],
+  ['holds-waiting-for-pickup', [0, 2, 3, 4, 5, 6]],
+  ['records-without-items', [0, 1, 2, 4]],
+  ['circulation-by-month'],
 ]

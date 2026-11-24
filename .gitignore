@@ -1,3 +1,5 @@
 test-run.txt
 node_modules/
 .DS_Store
+dist/
+*.tgz

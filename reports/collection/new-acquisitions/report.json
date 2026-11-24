@@ -20,5 +20,28 @@
       "sample": "2026-11-07",
       "prompt": "last day of the period (included)"
     }
-  ]
+  ],
+  "spec": {
+    "subject": "items",
+    "mode": "list",
+    "columns": [
+      "added",
+      "barcode",
+      "title",
+      "author",
+      "callnumber",
+      "itemtype",
+      "price"
+    ],
+    "filters": [
+      {
+        "column": "home",
+        "op": "ask"
+      },
+      {
+        "column": "added",
+        "op": "askBetween"
+      }
+    ]
+  }
 }

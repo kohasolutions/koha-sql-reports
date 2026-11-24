@@ -4,5 +4,21 @@
   "title": "Items without a barcode",
   "summary": "Copies that have no barcode, so they cannot be checked out at the desk.",
   "audience": "everyone",
-  "parameters": []
+  "parameters": [],
+  "spec": {
+    "subject": "items",
+    "mode": "list",
+    "columns": [
+      "title",
+      "home",
+      "callnumber",
+      "added"
+    ],
+    "filters": [
+      {
+        "column": "barcode",
+        "op": "empty"
+      }
+    ]
+  }
 }

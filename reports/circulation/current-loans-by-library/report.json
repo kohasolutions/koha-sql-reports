@@ -4,5 +4,19 @@
   "title": "Current loans by library",
   "summary": "How many items are on loan right now at each library, and how many of those are overdue.",
   "audience": "everyone",
-  "parameters": []
+  "parameters": [],
+  "spec": {
+    "subject": "loans",
+    "mode": "totals",
+    "groups": [
+      {
+        "column": "library"
+      }
+    ],
+    "measures": [
+      "rows",
+      "overdue"
+    ],
+    "filters": []
+  }
 }

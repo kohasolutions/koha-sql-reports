@@ -10,5 +10,40 @@
       "sample": "CPL",
       "prompt": "the library (pick from the list Koha shows)"
     }
-  ]
+  ],
+  "spec": {
+    "subject": "items",
+    "mode": "list",
+    "columns": [
+      "barcode",
+      "title",
+      "author",
+      "callnumber",
+      "itemtype",
+      "added"
+    ],
+    "filters": [
+      {
+        "column": "home",
+        "op": "ask"
+      },
+      {
+        "column": "checkouts",
+        "op": "atMost",
+        "value": 0
+      },
+      {
+        "column": "lastborrowed",
+        "op": "empty"
+      },
+      {
+        "column": "lost",
+        "op": "no"
+      },
+      {
+        "column": "withdrawn",
+        "op": "no"
+      }
+    ]
+  }
 }

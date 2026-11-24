@@ -10,5 +10,30 @@
       "sample": "CPL",
       "prompt": "the library (pick from the list Koha shows)"
     }
-  ]
+  ],
+  "spec": {
+    "subject": "items",
+    "mode": "list",
+    "columns": [
+      "barcode",
+      "title",
+      "author",
+      "itemtype",
+      "added"
+    ],
+    "filters": [
+      {
+        "column": "home",
+        "op": "ask"
+      },
+      {
+        "column": "callnumber",
+        "op": "empty"
+      },
+      {
+        "column": "withdrawn",
+        "op": "no"
+      }
+    ]
+  }
 }

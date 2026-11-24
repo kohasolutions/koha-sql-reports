@@ -4,5 +4,22 @@
   "title": "Records with no items",
   "summary": "Catalogue records that have no copies attached, newest first.",
   "audience": "everyone",
-  "parameters": []
+  "parameters": [],
+  "spec": {
+    "subject": "records",
+    "mode": "list",
+    "columns": [
+      "number",
+      "title",
+      "author",
+      "created"
+    ],
+    "filters": [
+      {
+        "column": "copies",
+        "op": "atMost",
+        "value": 0
+      }
+    ]
+  }
 }
