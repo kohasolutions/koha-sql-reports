@@ -16,9 +16,12 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
       - run: node tools/lint.mjs
       - run: node tools/build-index.mjs --check
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
       - name: Company introduction matches github.com/kohasolutions/.github/company/about.md
         run: node tools/sync-about.mjs --check
 
@@ -34,10 +37,11 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
       - name: Fetch kohastructure.sql for ${{ matrix.koha }}
         run: curl -fsSL -o kohastructure.sql "https://raw.githubusercontent.com/Koha-Community/Koha/${{ matrix.koha }}/installer/data/mysql/kohastructure.sql"
       - run: KOHASTRUCTURE=kohastructure.sql node tools/lint.mjs
+      - run: KOHASTRUCTURE=kohastructure.sql node tools/lint-model.mjs
 
   secrets:
     name: No secrets committed
