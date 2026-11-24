@@ -4,10 +4,13 @@ All notable changes to the reports. Versions follow [semantic versioning](https:
 minor version, a fix to an existing report is a patch, and a change to a report's columns or prompts is noted
 clearly because saved copies in your Koha do not change by themselves.
 
-## Unreleased
+## 1.1.0 — 2026-11-24
 
-- The report generator (`src/`): a description of a report in, the SQL and its words out. 11 subjects; proved through Koha's own
-  report engine (`tools/prove.mjs`, [GENERATOR-TESTED.md](GENERATOR-TESTED.md)). Its page follows.
+- The report generator (`src/`): a description of a report in, the SQL and its words out. 11 subjects; proved through
+  Koha's own report engine (`tools/prove.mjs`, [GENERATOR-TESTED.md](GENERATOR-TESTED.md)). Built package attached to
+  the release.
+- `reports.json`: ten reports carry a `spec`, the same report as the generator's description.
+- The reports' SQL is unchanged.
 
 ## 1.0.1 — 2026-11-24
 

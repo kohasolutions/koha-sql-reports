@@ -75,6 +75,24 @@ Each report's own page explains its columns, what it asks for, and anything to w
 18 reports. 🔒 = the results include patrons' personal details: staff use only.
 <!-- index:end -->
 
+## The report generator
+
+Need a report that is not in the list? `src/` makes one: a description of a report goes in (what it is about, its
+columns, filters, groups and order), the SQL comes out, with a sentence that says what it does. 11 subjects: loans now,
+loan history, checkouts and returns, items, records, patrons, holds now, hold history, charges, payments, orders.
+
+```ts
+import { read, compile, describe } from 'koha-sql-reports'
+
+const r = read({ subject: 'items', mode: 'list', columns: ['title', 'barcode'], filters: [{ column: 'lastborrowed', op: 'before', days: 730 }] })
+if ('spec' in r) console.log(describe(r.spec), compile(r.spec).sql)
+else console.log(r.problems)
+```
+
+It can only make a `SELECT`. Every column, filter, group and total of every subject is run through Koha's own report
+engine before a release, then checked against data whose answer is known: [GENERATOR-TESTED.md](GENERATOR-TESTED.md).
+Install it from a release: `npm install https://github.com/kohasolutions/koha-sql-reports/releases/download/v1.1.0/koha-sql-reports-1.1.0.tgz`
+
 ## How the reports are checked
 
 A report that worked on an older Koha can fail on a newer one: a column is renamed, a table moves. So every report
